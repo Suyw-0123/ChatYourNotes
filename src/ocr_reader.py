@@ -8,7 +8,7 @@ from src.config import Config
 class OCRReader:
     def __init__(self):
         # 設定 Tesseract 路徑（Windows 用戶可能需要）
-        # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        # pytesseract.pytesseract.tesseract_cmd = r'D:\Tesseract_OCR\tesseract.exe'
         pass
     
     def extract_text_from_pdf(self, pdf_path):

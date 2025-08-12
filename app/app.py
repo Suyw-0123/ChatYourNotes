@@ -26,56 +26,81 @@ qa_service = QAService()
 
 @app.route('/')
 def index():
-    """首頁"""
+    """首頁，自動補處理所有未完成的 PDF"""
     pdf_files = file_handler.get_pdf_list()
-    available_docs = qa_service.get_available_documents()
+    available_docs = set(qa_service.get_available_documents())
+    errors = []
+    # 自動補處理未完成的 PDF
+    for filename in pdf_files:
+        if filename not in available_docs:
+            try:
+                file_path = os.path.join(Config.PDF_DIR, filename)
+                # OCR
+                ocr_path, text = ocr_reader.process_pdf(file_path, filename)
+                if not text:
+                    raise Exception('OCR 文字提取失敗')
+                # 摘要
+                summary_path, summary = summarizer.create_summary(text, filename)
+                if not summary:
+                    raise Exception('摘要生成失敗')
+                # 向量化
+                success = vector_store.add_document(text, filename)
+                if not success:
+                    raise Exception('向量資料庫處理失敗')
+                available_docs.add(filename)
+            except Exception as e:
+                error_msg = f"檔案 {filename} 處理失敗：{str(e)}"
+                print(error_msg)
+                errors.append(error_msg)
+    # 顯示所有錯誤
+    for msg in errors:
+        flash(msg, 'danger')
     return render_template('index.html', pdf_files=pdf_files, available_docs=available_docs)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    """處理 PDF 上傳"""
+    """處理 PDF 上傳，並加強錯誤提示"""
     try:
         if 'file' not in request.files:
-            flash('沒有選擇檔案')
+            flash('沒有選擇檔案', 'danger')
             return redirect(request.url)
-        
+
         file = request.files['file']
-        
+
         if file.filename == '':
-            flash('沒有選擇檔案')
+            flash('沒有選擇檔案', 'danger')
             return redirect(request.url)
-        
+
         if file and file_handler.allowed_file(file.filename):
             # 1. 儲存 PDF 檔案
             file_path, filename = file_handler.save_pdf(file)
             if not file_path:
-                flash('檔案儲存失敗')
+                flash('檔案儲存失敗', 'danger')
                 return redirect(url_for('index'))
-            
-            # 2. OCR 處理
-            ocr_path, text = ocr_reader.process_pdf(file_path, filename)
-            if not text:
-                flash('文字提取失敗')
-                return redirect(url_for('index'))
-            
-            # 3. 生成摘要
-            summary_path, summary = summarizer.create_summary(text, filename)
-            
-            # 4. 添加到向量資料庫
-            success = vector_store.add_document(text, filename)
-            
-            if success:
-                flash(f'檔案 {filename} 上傳並處理成功！')
-            else:
-                flash('向量資料庫處理失敗')
-                
+            try:
+                # 2. OCR 處理
+                ocr_path, text = ocr_reader.process_pdf(file_path, filename)
+                if not text:
+                    raise Exception('OCR 文字提取失敗')
+                # 3. 生成摘要
+                summary_path, summary = summarizer.create_summary(text, filename)
+                if not summary:
+                    raise Exception('摘要生成失敗')
+                # 4. 添加到向量資料庫
+                success = vector_store.add_document(text, filename)
+                if success:
+                    flash(f'檔案 {filename} 上傳並處理成功！', 'success')
+                else:
+                    raise Exception('向量資料庫處理失敗')
+            except Exception as e:
+                flash(f'檔案 {filename} 處理失敗：{str(e)}', 'danger')
         else:
-            flash('不支援的檔案格式，請上傳 PDF 檔案')
-        
+            flash('不支援的檔案格式，請上傳 PDF 檔案', 'danger')
+
         return redirect(url_for('index'))
-        
+
     except Exception as e:
-        flash(f'處理檔案時發生錯誤：{str(e)}')
+        flash(f'處理檔案時發生錯誤：{str(e)}', 'danger')
         return redirect(url_for('index'))
 
 @app.route('/ask', methods=['POST'])

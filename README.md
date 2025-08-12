@@ -1,12 +1,12 @@
 # PDF 問答系統 (PDF QA System)
 
-一個基於 RAG（Retrieval-Augmented Generation）架構的 PDF 文檔問答系統，支援中文 OCR 和智慧問答功能。(目前僅初步架構設計，仍需修正)
+一個基於 RAG（Retrieval-Augmented Generation）架構的 PDF 文檔問答系統，支援中文 OCR 和 Gemini 智慧問答功能。
 
 ## 功能特色
 
 - 📄 **PDF 上傳處理**：支援 PDF 檔案上傳和儲存
 - 🔍 **智慧 OCR**：自動文字提取，支援中英文內容
-- 📝 **AI 摘要**：使用 GPT 生成文檔摘要
+- 📝 **AI 摘要**：使用 Gemini 生成文檔摘要
 - 🧠 **向量檢索**：基於語義相似度的文檔檢索
 - 💬 **智慧問答**：結合檢索內容的 AI 問答
 - 🌐 **Web 介面**：友善的網頁介面，支援拖放上傳
@@ -35,7 +35,7 @@ flowchart TD
 ## 環境需求
 
 - Python 3.8+
-- OpenAI API Key
+- Gemini API Key
 - Tesseract OCR (用於圖像文字識別)
 
 ### 系統依賴 (Ubuntu/Debian)
@@ -81,10 +81,11 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-編輯 `.env` 檔案，填入你的 OpenAI API Key：
+編輯 `.env` 檔案，填入你的 Gemini API Key：
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-3.5-turbo
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=你的_Gemini_API_Key
+GEMINI_MODEL=models/gemini-1.5-flash-latest
 EMBEDDING_MODEL=text-embedding-ada-002
 CHUNK_SIZE=1000
 CHUNK_OVERLAP=200
@@ -160,7 +161,7 @@ pdf-qa-system/
 - 支援中英文內容
 
 ### 2. Summarizer (summarizer.py)
-- 使用 OpenAI GPT 生成摘要
+- 使用 Gemini 生成摘要
 - 支援長文檔分段摘要
 - 結構化摘要輸出
 
@@ -170,15 +171,16 @@ pdf-qa-system/
 - 支援語義相似度搜索
 
 ### 4. QA Service (qa_service.py)
-- 整合檢索和生成的問答服務
+- 整合檢索和 Gemini 生成的問答服務
 - 提供信心度評分
 - 支援多文檔檢索
 
 ## 設定說明
 
 ### 環境變數
-- `OPENAI_API_KEY`: OpenAI API 金鑰
-- `OPENAI_MODEL`: GPT 模型名稱 (預設: gpt-3.5-turbo)
+- `LLM_PROVIDER`: 指定 LLM 來源（預設 gemini）
+- `GEMINI_API_KEY`: Gemini API 金鑰
+- `GEMINI_MODEL`: Gemini 模型名稱 (預設: models/gemini-1.5-flash-latest)
 - `CHUNK_SIZE`: 文檔分塊大小 (預設: 1000)
 - `CHUNK_OVERLAP`: 分塊重疊長度 (預設: 200)
 
@@ -324,4 +326,4 @@ CMD ["python", "app/app.py"]
 
 ---
 
-**注意**: 使用此系統前請確保已正確設定 OpenAI API Key，並遵守相關使用條款。
+**注意**: 使用此系統前請確保已正確設定 Gemini API Key，並遵守相關使用條款。
