@@ -107,12 +107,26 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
 # 專案特定檔案
-data/pdfs/*.pdf
-data/ocr_texts/*.txt
-data/summaries/*.txt
+data/pdfs/
+data/ocr_texts/
+data/summaries/
+data/texts/
 data/vector_store/
+models/
+notebook/__pycache__/
+notebook/*.ipynb_checkpoints
 *.log
+*.sqlite3
+
+# 機密/金鑰
+src/.env
+.env
+.env.*
+
+# 其他
+*.bin
 
 # IDE
 .vscode/
