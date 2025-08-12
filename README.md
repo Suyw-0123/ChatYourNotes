@@ -1,6 +1,6 @@
 # PDF 問答系統 (PDF QA System)
 
-一個基於 RAG（Retrieval-Augmented Generation）架構的 PDF 文檔問答系統，支援中文 OCR 和智慧問答功能。
+一個基於 RAG（Retrieval-Augmented Generation）架構的 PDF 文檔問答系統，支援中文 OCR 和智慧問答功能。(目前僅初步架構設計，仍需修正)
 
 ## 功能特色
 
