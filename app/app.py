@@ -14,8 +14,11 @@ from src.summarizer import Summarizer
 from src.vector_store import VectorStore
 from src.qa_service import QAService
 
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # 請更改為安全的密鑰
+# 設定最大上傳檔案大小（32MB）
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
 # 初始化服務
 file_handler = FileHandler()
@@ -59,6 +62,7 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    print("[DEBUG] /upload 路由被呼叫")
     """處理 PDF 上傳，並加強錯誤提示"""
     try:
         if 'file' not in request.files:
