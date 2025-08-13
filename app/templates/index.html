@@ -190,7 +190,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 檔案上傳處理
+        // 檔案上傳處理（AJAX 版）
         document.getElementById('fileInput').addEventListener('change', function() {
             const form = document.getElementById('uploadForm');
             const file = this.files[0];
@@ -209,8 +209,25 @@
                         <p class="mt-2">上傳並處理中，請稍候...</p>
                     </div>
                 `;
-                // 自動送出表單（保留原有行為）
-                form.submit();
+                // 用 AJAX 上傳
+                const formData = new FormData(form);
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        // Flask 會 redirect 回首頁
+                        window.location.href = response.url;
+                    } else {
+                        // 若沒 redirect，直接刷新
+                        window.location.reload();
+                    }
+                })
+                .catch(() => {
+                    alert('上傳失敗，請重試');
+                    window.location.reload();
+                });
             }
         });
 
