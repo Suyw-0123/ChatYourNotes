@@ -109,7 +109,7 @@ def upload_file():
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
-    """處理問答請求"""
+    """處理問答請求（增強版）"""
     try:
         data = request.get_json()
         question = data.get('question', '').strip()
@@ -120,21 +120,46 @@ def ask_question():
                 'error': '問題不能為空'
             })
         
-        # 使用 QA 服務回答問題
+        # 使用增強的 QA 服務回答問題
         result = qa_service.answer_question(question)
         
-        return jsonify({
+        response_data = {
             'success': True,
             'answer': result['answer'],
             'sources': result['sources'],
             'confidence': result['confidence'],
             'retrieved_docs': result.get('retrieved_docs', 0)
-        })
+        }
+        
+        # 添加問題分析資訊（如果有的話）
+        if 'question_analysis' in result:
+            response_data['question_analysis'] = result['question_analysis']
+        
+        # 添加子問題資訊（如果是廣泛問題）
+        if 'sub_questions' in result:
+            response_data['sub_questions'] = result['sub_questions']
+        
+        return jsonify(response_data)
         
     except Exception as e:
         return jsonify({
             'success': False,
             'error': f'處理問題時發生錯誤：{str(e)}'
+        })
+
+@app.route('/api/retrieval-stats', methods=['GET'])
+def get_retrieval_stats():
+    """獲取檢索統計資訊 API"""
+    try:
+        stats = qa_service.get_retrieval_stats()
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
         })
 
 @app.route('/delete/<filename>', methods=['POST'])
