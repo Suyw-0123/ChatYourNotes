@@ -63,7 +63,7 @@ class VectorStore:
             return False
     
     def search(self, query: str, top_k: int = None) -> List[Dict]:
-        """搜索相關文檔片段"""
+        """搜索相關文檔片段（增強版）"""
         if top_k is None:
             top_k = Config.TOP_K
         
@@ -84,13 +84,54 @@ class VectorStore:
                     formatted_results.append({
                         'content': results['documents'][0][i],
                         'metadata': results['metadatas'][0][i] if results['metadatas'] else {},
-                        'distance': results['distances'][0][i] if results['distances'] else 0
+                        'distance': results['distances'][0][i] if results['distances'] else 0,
+                        'id': results['ids'][0][i] if results['ids'] else f'doc_{i}'
                     })
             
             return formatted_results
             
         except Exception as e:
             print(f"Error searching vector store: {str(e)}")
+            return []
+    
+    def get_chunk_by_id(self, chunk_id: str) -> Dict:
+        """根據 ID 獲取特定片段"""
+        try:
+            results = self.collection.get(ids=[chunk_id])
+            if results['documents'] and len(results['documents']) > 0:
+                return {
+                    'content': results['documents'][0],
+                    'metadata': results['metadatas'][0] if results['metadatas'] else {},
+                    'distance': 0,  # 直接獲取的片段設為高相似度
+                    'id': chunk_id
+                }
+        except Exception as e:
+            print(f"Error getting chunk {chunk_id}: {e}")
+        return None
+    
+    def get_adjacent_chunks(self, filename: str, chunk_index: int, window_size: int = 1) -> List[Dict]:
+        """獲取相鄰的文檔片段"""
+        try:
+            adjacent_chunks = []
+            
+            for offset in range(-window_size, window_size + 1):
+                if offset == 0:  # 跳過當前片段
+                    continue
+                    
+                target_index = chunk_index + offset
+                if target_index < 0:  # 跳過負索引
+                    continue
+                    
+                chunk_id = f"{filename}_chunk_{target_index}"
+                chunk = self.get_chunk_by_id(chunk_id)
+                
+                if chunk:
+                    adjacent_chunks.append(chunk)
+            
+            return adjacent_chunks
+            
+        except Exception as e:
+            print(f"Error getting adjacent chunks: {e}")
             return []
     
     def delete_document(self, filename: str):

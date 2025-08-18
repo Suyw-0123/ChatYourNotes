@@ -261,8 +261,8 @@
         const askButton = document.getElementById('askButton');
         const chatContainer = document.getElementById('chatContainer');
 
-        // 使用 marked.js 將 markdown 轉為 html
-        function addMessage(content, isUser = false, sources = [], confidence = null) {
+        // 使用 marked.js 將 markdown 轉為 html（增強版）
+        function addMessage(content, isUser = false, sources = [], confidence = null, analysisInfo = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
             let html = `
@@ -275,14 +275,53 @@
             } else {
                 html += `<p class="mb-0">${content}</p>`;
             }
+            
+            // 顯示問題分析資訊
+            if (!isUser && analysisInfo) {
+                html += '<div class="source-info mt-2">';
+                html += '<strong><i class="fas fa-analytics"></i> 問題分析：</strong><br>';
+                
+                if (analysisInfo.is_broad) {
+                    html += '<span class="badge bg-info me-1">廣泛性問題</span>';
+                }
+                
+                html += `<span class="badge bg-secondary me-1">複雜度: ${analysisInfo.complexity_score}/10</span>`;
+                
+                if (analysisInfo.question_types && analysisInfo.question_types.length > 0) {
+                    html += '<br><small>問題類型: ' + analysisInfo.question_types.join(', ') + '</small>';
+                }
+                
+                html += '</div>';
+            }
+            
             if (!isUser && sources && sources.length > 0) {
                 html += '<div class="source-info mt-2">';
                 html += '<strong><i class="fas fa-book"></i> 參考來源：</strong><br>';
                 sources.forEach(source => {
-                    html += `• ${source.filename} (${source.chunk_info})<br>`;
+                    let relevanceClass = '';
+                    let relevanceIcon = '';
+                    
+                    switch(source.relevance) {
+                        case 'high':
+                            relevanceClass = 'text-success';
+                            relevanceIcon = 'fa-star';
+                            break;
+                        case 'medium':
+                            relevanceClass = 'text-warning';
+                            relevanceIcon = 'fa-star-half-alt';
+                            break;
+                        default:
+                            relevanceClass = 'text-muted';
+                            relevanceIcon = 'fa-star-o';
+                    }
+                    
+                    html += `• ${source.filename} (${source.chunk_info}) `;
+                    html += `<i class="fas ${relevanceIcon} ${relevanceClass}"></i> `;
+                    html += `<small class="${relevanceClass}">相似度: ${source.similarity}</small><br>`;
                 });
                 html += '</div>';
             }
+            
             if (!isUser && confidence !== null) {
                 const confidencePercent = Math.round(confidence * 100);
                 let confidenceColor = '#dc3545'; // red
@@ -297,6 +336,7 @@
                     </div>
                 `;
             }
+            
             messageDiv.innerHTML = html;
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -326,7 +366,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    addMessage(data.answer, false, data.sources, data.confidence);
+                    // 顯示問題分析和子問題資訊（如果有）
+                    let extraInfo = '';
+                    if (data.sub_questions && data.sub_questions.length > 0) {
+                        extraInfo += '\n\n**問題分解：**\n';
+                        data.sub_questions.forEach((sq, index) => {
+                            extraInfo += `${index + 1}. ${sq}\n`;
+                        });
+                        extraInfo += '\n---\n';
+                    }
+                    
+                    const fullAnswer = extraInfo + data.answer;
+                    addMessage(fullAnswer, false, data.sources, data.confidence, data.question_analysis);
                 } else {
                     addMessage(`錯誤：${data.error}`, false);
                 }
