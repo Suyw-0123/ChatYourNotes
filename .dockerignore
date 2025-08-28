@@ -1,0 +1,11 @@
+# Docker 相關文件
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+
+# 容器運行時文件
+.docker/
+
+# Docker volumes 和 networks
+docker_volumes/

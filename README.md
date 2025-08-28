@@ -56,37 +56,89 @@ flowchart TD
     N --> O[回傳給用戶]
 ```
 
-## 環境需求
+## 部署方式
 
+### 方式一：Docker 容器化部署（推薦）
+
+Docker 提供了最簡單、最一致的部署方式：
+
+#### 使用 Docker Compose（推薦）
+```bash
+# 1. 克隆專案
+git clone <repository-url>
+cd ChatYourNotes
+
+# 2. 創建環境變數檔案
+cp src/.env.example src/.env
+# 編輯 .env 檔案，填入您的 Gemini API Key
+
+# 3. 使用 Docker Compose 啟動
+docker-compose up -d
+
+# 4. 檢查服務狀態
+docker-compose ps
+```
+
+應用程式將在 http://localhost 運行（透過 Nginx）
+
+#### 僅使用 Docker
+```bash
+# 建構映像檔
+docker build -t chatyournotes .
+
+# 運行容器
+docker run -d \
+  --name chatyournotes \
+  -p 5000:5000 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/src/.env:/app/src/.env \
+  -e GEMINI_API_KEY=your_api_key_here \
+  chatyournotes
+```
+
+應用程式將在 http://localhost:5000 運行
+
+#### Docker 的優勢
+- ✅ **零環境配置**：無需安裝 Python、Tesseract 等依賴
+- ✅ **一致性**：開發、測試、生產環境完全一致
+- ✅ **快速部署**：一鍵啟動整個應用堆疊
+- ✅ **易於擴展**：可輕鬆添加負載均衡、快取等服務
+- ✅ **資料持久化**：透過 Volume 掛載確保資料不丟失
+
+### 方式二：傳統安裝
+
+如果您偏好傳統的安裝方式：
+
+#### 環境需求
 - Python 3.8+
-- Gemini API Key
+- Gemini API Key  
 - Tesseract OCR (用於圖像文字識別)
 
-### 系統依賴 (Ubuntu/Debian)
+#### 系統依賴 (Ubuntu/Debian)
 ```bash
 sudo apt update
 sudo apt install tesseract-ocr tesseract-ocr-chi-tra poppler-utils
 ```
 
-### 系統依賴 (macOS)
+#### 系統依賴 (macOS)
 ```bash
 brew install tesseract tesseract-lang poppler
 ```
 
-### 系統依賴 (Windows)
+#### 系統依賴 (Windows)
 1. 下載並安裝 [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki)
 2. 下載並安裝 [Poppler](https://poppler.freedesktop.org/)
 3. 將安裝路徑添加到系統 PATH
 
-## 安裝步驟
+#### 安裝步驟
 
-### 1. 克隆專案
+##### 1. 克隆專案
 ```bash
 git clone <repository-url>
-cd pdf-qa-system
+cd ChatYourNotes
 ```
 
-### 2. 創建虛擬環境
+##### 2. 創建虛擬環境
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -94,7 +146,7 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ```
 
-### 3. 安裝依賴
+##### 3. 安裝依賴
 ```bash
 pip install -r requirements.txt
 ```
