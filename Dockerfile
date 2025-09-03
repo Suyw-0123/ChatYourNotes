@@ -4,11 +4,12 @@ FROM python:3.11-slim
 # 設定工作目錄
 WORKDIR /app
 
-# 安裝系統依賴（Tesseract OCR 和 Poppler）
+# 安裝系統依賴（Tesseract OCR、Poppler 和 curl）
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-chi-tra \
     poppler-utils \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

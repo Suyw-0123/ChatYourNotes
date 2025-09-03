@@ -6,9 +6,12 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=production
-      - LLM_PROVIDER=gemini
+      - FLASK_DEBUG=False
+      - LLM_PROVIDER=${LLM_PROVIDER}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=models/gemini-1.5-flash-latest
+      - GEMINI_MODEL=${GEMINI_MODEL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
     volumes:
       # 掛載資料目錄，確保資料持久化
       - ./data:/app/data
@@ -20,6 +23,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
     
   # 可選：加入 Redis 作為快取服務
   redis:
