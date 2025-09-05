@@ -13,16 +13,7 @@ try:
 except ImportError:
     openai = None
 
-class QAService:
-    def __init__(self):
-        self.vector_store = VectorStore()
-        self.smart_retrieval = SmartRetrievalService()
-        # Gemini 設定
-        if Config.PROVIDER == 'gemini':
-            genai.configure(api_key=Config.GEMINI_API_KEY)
-        # OpenAI 設定
-        if openai and Config.PROVIDER == 'openai':
-            openai.api_key = Config.OPENAI_API_KEY
+ 
 
     def answer_question(self, question: str) -> Dict:
         """回答使用者問題（使用智能檢索策略）"""

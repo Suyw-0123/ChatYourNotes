@@ -123,7 +123,6 @@ notebook/*.ipynb_checkpoints
 # 機密/金鑰
 src/.env
 .env
-.env.*
 
 # 其他
 *.bin
