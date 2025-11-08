@@ -1,4 +1,4 @@
-# PDF 問答系統 (PDF QA System) 
+# PDF 問答系統 (目前GoogleGenerativeAI更新，已經無法運行）
 
 一個基於 RAG（Retrieval-Augmented Generation）架構的 PDF 文檔問答系統，支援中文 OCR 和 Gemini 智慧問答功能，具備智能檢索和上下文擴展策略。
 
